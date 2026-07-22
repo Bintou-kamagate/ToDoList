@@ -1,0 +1,4 @@
+{
+  "buildCommand": "npm install --include=dev && npm run build -- --configuration production",
+  "outputDirectory": "dist/my-first-angular-app/browser"
+}
