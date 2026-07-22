@@ -40,9 +40,6 @@ services:
     rootDir: my-first-angular-app
     buildCommand: npm install && npm run build -- --configuration production
     staticPublishPath: dist/my-first-angular-app/browser
-    envVars:
-      - key: NODE_ENV
-        value: production
 
 # Notes:
 # - After pushing this file, connect the repo to Render and deploy.
@@ -59,4 +56,7 @@ services:
 #   as backendToDoList/.env (never commit those values to this file).
 # - The Angular frontend's API base URL comes from src/environments/environment.prod.ts — update
 #   it there if the backend's actual Render URL differs from the default above.
+# - Do not set NODE_ENV=production on the frontend service: it makes `npm install` skip
+#   devDependencies, where @angular/cli lives, breaking `ng build` with "ng: not found".
+#   Angular's own production optimizations come from `--configuration production`, not NODE_ENV.
 # - Adjust service names, branch, or region to match your Render setup.
