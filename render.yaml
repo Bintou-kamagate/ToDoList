@@ -1,0 +1,59 @@
+# Render deployment configuration for this monorepo
+
+services:
+  - type: web
+    name: backend-laravel
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    rootDir: backendToDoList
+    dockerfilePath: ./Dockerfile
+    preDeployCommand: php artisan migrate --force
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: 'false'
+      - key: APP_URL
+        value: https://backend-laravel.onrender.com
+      - key: APP_KEY
+        value: base64:9xaF6Vsqb9SeisO2OCSvskMOcnf68UoFcjWYee+UgDA=
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DATABASE_URL
+        fromDatabase:
+          name: my-postgres
+          property: connectionString
+
+  - type: web
+    name: frontend-angular
+    runtime: static
+    branch: main
+    region: oregon
+    rootDir: my-first-angular-app
+    buildCommand: npm install && npm run build -- --configuration production
+    staticPublishPath: dist/my-first-angular-app/browser
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+databases:
+  - name: my-postgres
+    plan: starter
+    region: oregon
+    databaseName: neondb
+
+# Notes:
+# - After pushing this file, connect the repo to Render and deploy.
+# - The backend deploys via Docker (see backendToDoList/Dockerfile) — Render has no native PHP runtime.
+# - APP_KEY above was pre-generated (php artisan key:generate --show) so it stays stable across
+#   deploys. Rotate it from the Render dashboard if it is ever exposed; do not regenerate it on
+#   every build, or existing sessions/encrypted data will break each deploy.
+# - Migrations run as a pre-deploy step: after a successful build, before traffic switches to the
+#   new version.
+# - The Angular frontend's API base URL comes from src/environments/environment.prod.ts — update
+#   it there if the backend's actual Render URL differs from the default above.
+# - Use the Render dashboard to manage secret environment variables and database credentials.
+# - Do not commit sensitive data such as DB passwords.
+# - Adjust service names, branch, or region to match your Render setup.

@@ -1,0 +1,135 @@
+.stat-badge {
+  font-weight: 500;
+  padding: 0.5em 0.85em;
+}
+
+.search-group {
+  width: 200px;
+}
+
+.sort-select {
+  width: 170px;
+}
+
+.todo-item {
+  margin-bottom: 10px;
+  border-radius: 10px !important;
+  border: 1px solid #e9ecef;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.todo-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.todo-item.todo-completed {
+  background-color: #f8f9fa;
+}
+
+.todo-item.todo-editing {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #adb5bd;
+  cursor: pointer;
+}
+
+.toggle-btn:hover {
+  color: #198754;
+}
+
+.todo-completed .toggle-btn {
+  color: #198754;
+}
+
+/* Toasts */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 320px;
+}
+
+.toast-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: toast-in 0.2s ease-out;
+}
+
+.toast-item.toast-success {
+  background-color: #198754;
+}
+
+.toast-item.toast-error {
+  background-color: #dc3545;
+}
+
+.toast-item span {
+  flex: 1;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: #fff;
+  opacity: 0.8;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.toast-close:hover {
+  opacity: 1;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Confirmation modal */
+.modal-backdrop-custom {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1090;
+  padding: 1rem;
+}
+
+.modal-dialog-custom {
+  width: 100%;
+  max-width: 400px;
+}

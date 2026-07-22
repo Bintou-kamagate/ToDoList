@@ -1,0 +1,215 @@
+<div class="container py-4">
+  <!-- Toasts -->
+  <div class="toast-container">
+    @for (toast of toasts(); track toast.id) {
+      <div class="toast-item" [class.toast-success]="toast.type === 'success'" [class.toast-error]="toast.type === 'error'">
+        <i class="bi" [class.bi-check-circle]="toast.type === 'success'" [class.bi-exclamation-triangle]="toast.type === 'error'"></i>
+        <span>{{ toast.message }}</span>
+        <button type="button" class="toast-close" (click)="dismissToast(toast.id)" aria-label="Fermer la notification">&times;</button>
+      </div>
+    }
+  </div>
+
+  <header class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h1 class="h3 mb-1">
+        <i class="bi bi-list-check text-primary"></i>
+        Mes tâches
+      </h1>
+      <p class="text-muted mb-0">{{ counts().active }} en cours &middot; {{ counts().completed }} terminée(s)</p>
+    </div>
+    <div class="d-flex gap-2">
+      <span class="badge stat-badge text-bg-secondary">{{ counts().total }} au total</span>
+      <span class="badge stat-badge text-bg-warning">{{ counts().active }} active(s)</span>
+      <span class="badge stat-badge text-bg-success">{{ counts().completed }} terminée(s)</span>
+    </div>
+  </header>
+
+  <!-- Formulaire -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form [formGroup]="todoForm" (ngSubmit)="submitForm()">
+        <div class="row g-2 align-items-start">
+          <div class="col-12 col-md-4">
+            <label class="form-label visually-hidden" for="todo-title">Titre</label>
+            <input
+              id="todo-title"
+              type="text"
+              class="form-control"
+              formControlName="title"
+              placeholder="Titre de la tâche..."
+              [class.is-invalid]="todoForm.get('title')?.invalid && todoForm.get('title')?.touched" />
+            @if (todoForm.get('title')?.invalid && todoForm.get('title')?.touched) {
+              <div class="invalid-feedback">Le titre doit contenir au moins 3 caractères.</div>
+            }
+          </div>
+          <div class="col-12 col-md-3">
+            <label class="form-label visually-hidden" for="todo-description">Description</label>
+            <input id="todo-description" type="text" class="form-control" formControlName="description" placeholder="Description (optionnel)" />
+          </div>
+          <div class="col-6 col-md-2">
+            <label class="form-label visually-hidden" for="todo-due-date">Échéance</label>
+            <input id="todo-due-date" type="date" class="form-control" formControlName="due_date" />
+          </div>
+          <div class="col-6 col-md-2">
+            <label class="form-label visually-hidden" for="todo-priority">Priorité</label>
+            <select id="todo-priority" class="form-select" formControlName="priority">
+              <option value="low">Basse</option>
+              <option value="medium">Moyenne</option>
+              <option value="high">Haute</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-1 d-grid gap-1">
+            <button type="submit" class="btn btn-primary" [disabled]="todoForm.invalid || isSubmitting()">
+              @if (isSubmitting()) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else {
+                {{ editingTodo() ? 'Modifier' : 'Ajouter' }}
+              }
+            </button>
+            @if (editingTodo()) {
+              <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancelEdit()">Annuler</button>
+            }
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Filtres / recherche / tri -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div class="btn-group" role="group" aria-label="Filtrer les tâches">
+      <!-- <button
+        type="button"
+        class="btn btn-sm"
+        [class.btn-primary]="filter() === 'all'"
+        [class.btn-outline-primary]="filter() !== 'all'"
+        (click)="setFilter('all')">
+        Toutes ({{ counts().total }})
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm"
+        [class.btn-primary]="filter() === 'active'"
+        [class.btn-outline-primary]="filter() !== 'active'"
+        (click)="setFilter('active')">
+        Actives ({{ counts().active }})
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm"
+        [class.btn-primary]="filter() === 'completed'"
+        [class.btn-outline-primary]="filter() !== 'completed'"
+        (click)="setFilter('completed')">
+        Terminées ({{ counts().completed }})
+      </button> -->
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <div class="input-group input-group-sm search-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input
+          type="search"
+          class="form-control"
+          placeholder="Rechercher..."
+          aria-label="Rechercher une tâche"
+          [value]="searchText()"
+          (input)="onSearchInput($any($event.target).value)" />
+      </div>
+      <select class="form-select form-select-sm sort-select" aria-label="Trier les tâches" [value]="sortBy()" (change)="setSortBy($any($event.target).value)">
+        <option value="created_desc">Plus récentes</option>
+        <option value="created_asc">Plus anciennes</option>
+        <option value="due_date">Échéance</option>
+        <option value="priority">Priorité</option>
+        <option value="title">Titre (A-Z)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Chargement -->
+  @if (isLoading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
+    </div>
+  } @else {
+    <!-- Liste -->
+    @if (filteredTodos().length > 0) {
+      <div class="list-group">
+        @for (todo of filteredTodos(); track todo.id) {
+          <div class="list-group-item todo-item" [class.todo-completed]="todo.completed" [class.todo-editing]="editingTodo()?.id === todo.id">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+              <div class="d-flex gap-3 flex-grow-1 min-w-0">
+                <button
+                  type="button"
+                  class="toggle-btn"
+                  (click)="toggleTodo(todo)"
+                  [attr.aria-label]="todo.completed ? 'Marquer comme active' : 'Marquer comme terminée'">
+                  <i class="bi" [class.bi-check-circle-fill]="todo.completed" [class.bi-circle]="!todo.completed"></i>
+                </button>
+                <div class="min-w-0">
+                  <h5 class="mb-1 text-break" [class.text-decoration-line-through]="todo.completed">{{ todo.title }}</h5>
+                  @if (todo.description) {
+                    <p class="mb-1 text-muted small text-break">{{ todo.description }}</p>
+                  }
+                  <div class="d-flex gap-2 flex-wrap">
+                    <span
+                      class="badge"
+                      [class.text-bg-danger]="todo.priority === 'high'"
+                      [class.text-bg-warning]="todo.priority === 'medium'"
+                      [class.text-bg-secondary]="todo.priority === 'low'">
+                      {{ priorityLabel(todo.priority) }}
+                    </span>
+                    @if (todo.due_date) {
+                      <span class="badge" [class.text-bg-danger]="isOverdue(todo)" [class.text-bg-light]="!isOverdue(todo)">
+                        <i class="bi bi-calendar-event"></i>
+                        {{ todo.due_date }}
+                        @if (isOverdue(todo)) {
+                          &middot; en retard
+                        }
+                      </span>
+                    }
+                  </div>
+                </div>
+              </div>
+              <div class="btn-group flex-shrink-0">
+                <button class="btn btn-outline-secondary btn-sm" (click)="editTodo(todo)" aria-label="Modifier la tâche">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-outline-danger btn-sm" (click)="requestDelete(todo)" aria-label="Supprimer la tâche">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-clipboard-check display-4 d-block mb-2"></i>
+        @if (todos().length === 0) {
+          <p class="mb-0">Aucune tâche pour l'instant. Ajoutez-en une !</p>
+        } @else {
+          <p class="mb-0">Aucune tâche ne correspond à ce filtre.</p>
+        }
+      </div>
+    }
+  }
+
+  <!-- Confirmation de suppression -->
+  @if (todoToDelete(); as todo) {
+    <div class="modal-backdrop-custom" (click)="cancelDelete()">
+      <div class="modal-dialog-custom card shadow" (click)="$event.stopPropagation()">
+        <div class="card-body">
+          <h5 class="card-title">Supprimer la tâche ?</h5>
+          <p class="card-text text-muted">« {{ todo.title }} » sera définitivement supprimée.</p>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" (click)="cancelDelete()">Annuler</button>
+            <button type="button" class="btn btn-danger" (click)="confirmDelete()">Supprimer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
