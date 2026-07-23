@@ -58,6 +58,11 @@
   color: #198754;
 }
 
+.toggle-btn:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
 .todo-completed .toggle-btn {
   color: #198754;
 }

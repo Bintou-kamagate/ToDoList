@@ -165,6 +165,8 @@ export class TodoListComponent implements OnInit {
   }
 
   toggleTodo(todo: Todo): void {
+    if (todo.completed) return;
+
     this.todoService.toggleTodo(todo).subscribe({
       next: (updated) => {
         this.todos.update((list) => list.map((t) => (t.id === updated.id ? updated : t)));

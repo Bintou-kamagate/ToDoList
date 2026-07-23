@@ -144,8 +144,9 @@
                 <button
                   type="button"
                   class="toggle-btn"
+                  [disabled]="todo.completed"
                   (click)="toggleTodo(todo)"
-                  [attr.aria-label]="todo.completed ? 'Marquer comme active' : 'Marquer comme terminée'">
+                  [attr.aria-label]="todo.completed ? 'Tâche terminée (définitif)' : 'Marquer comme terminée'">
                   <i class="bi" [class.bi-check-circle-fill]="todo.completed" [class.bi-circle]="!todo.completed"></i>
                 </button>
                 <div class="min-w-0">
