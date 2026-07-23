@@ -28,6 +28,11 @@
 
 .todo-item.todo-completed {
   background-color: #f8f9fa;
+  opacity: 0.6;
+}
+
+.todo-item.todo-completed:hover {
+  opacity: 0.85;
 }
 
 .todo-item.todo-editing {
